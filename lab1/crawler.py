@@ -8,7 +8,8 @@ import urllib.request as req
 import sys
 import os
 from html.parser import HTMLParser
-      
+import numpy
+    
 class Parser(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)
@@ -31,7 +32,7 @@ class Dummy_Policy:
             
     def updateURLs(self, c, newURLs, newURLsWD, iteration):
         pass
-
+# LIFO NORMAL fetch policy. 
 class LIFO_Policy:
     def __init__(self,c):
         self.queue = list(c.seedURLs)
@@ -39,9 +40,96 @@ class LIFO_Policy:
         if len(c.URLs) == 0:
             return None
         else:
+            try:
+                if(len(self.queue)==0):
+                    self.queue = list(c.seedURLs)
+                url=self.queue[-1]
+                self.queue.pop(-1)
+                return url
+            except:
+                return None
+
+    def updateURLs(self, c, newURLs, newURLsWD, iteration):
+        tmpList=[url for url in newURLs]
+        tmpList.sort(key=lambda url: url[len(url) - url[::-1].index('/'):])
+        for url in tmpList:
+            self.queue.append(url)
+        pass
+        
+# LIFO cycle fetch policy. 
+class LIFO_CYCLE_Policy:
+    def __init__(self,c):
+        self.queue = list(c.seedURLs)
+        self.fetched = set()
+    def getURL(self, c, iteration):
+        if len(c.URLs) == 0:
+            return None
+        else:
+            while(len(self.queue)>0):
+                url=self.queue[-1]
+                self.queue.pop(-1)
+                if( url not in self.fetched):
+                    self.fetched.add(url)
+                    return url
+            self.queue = list(c.seedURLs)
+            self.fetched.clear()
             url=self.queue[-1]
             self.queue.pop(-1)
             return url
+    def updateURLs(self, c, newURLs, newURLsWD, iteration):
+        tmpList=[url for url in newURLs]
+        tmpList.sort(key=lambda url: url[len(url) - url[::-1].index('/'):])
+        for url in tmpList:
+            self.queue.append(url)
+        pass
+# LIFO authority fetch policy. 
+class LIFO_AUTHORITY_Policy:
+    def __init__(self,c):
+        self.queue = list(c.seedURLs)
+        self.fetched = set()
+    def getURL(self, c, iteration):
+        if len(c.URLs) == 0:
+            return None
+        else:
+            while(len(self.queue)>0):
+                url=self.queue[-1]
+                self.queue.pop(-1)
+                if( url not in self.fetched):
+                    self.fetched.add(url)
+                    return url
+            #Priority
+            urlsList =[]
+            elements = []
+            probs = []
+            for url in self.fetched:
+                if( url not in c.incomingURLs):
+                    continue
+                elements.append(url)
+                probs.append(float(len(c.incomingURLs[url])))
+            probs=numpy.asarray(probs)/sum(probs)
+            return numpy.random.choice(a=elements,size=1,p=probs)[0]
+    def updateURLs(self, c, newURLs, newURLsWD, iteration):
+        tmpList=[url for url in newURLs]
+        tmpList.sort(key=lambda url: url[len(url) - url[::-1].index('/'):])
+        for url in tmpList:
+            self.queue.append(url)
+        pass
+# FIFO fetch policy.        
+class FIFO_Policy:
+    def __init__(self,c):
+        self.queue = list(c.seedURLs)
+    def getURL(self, c, iteration):
+        if len(c.URLs) == 0:
+            return None
+        else:
+            try:
+                if(len(self.queue)==0):
+                    self.queue = list(c.seedURLs)
+                url=self.queue[0]
+                self.queue.pop(0)
+                return url
+            except:
+                return None
 
     def updateURLs(self, c, newURLs, newURLsWD, iteration):
         tmpList=[url for url in newURLs]
@@ -58,7 +146,7 @@ class Container:
         # The name of the crawler"
         self.crawlerName = "IRbot"
         # Example ID
-        self.example = "exercise1"
+        self.example = "exercise3"
         # Root (host) page
         self.rootPage = "http://www.cs.put.poznan.pl/mtomczyk/ir/lab1/" + self.example
         # Initial links to visit
@@ -71,11 +159,11 @@ class Container:
          # Incoming URLs (to <- from; set of incoming links)
         self.incomingURLs = {}
         # Class which maintains a queue of urls to visit. 
-        self.generatePolicy = LIFO_Policy(self)
+        self.generatePolicy = LIFO_AUTHORITY_Policy(self)
         # Page (URL) to be fetched next
         self.toFetch = None
         # Number of iterations of a crawler. 
-        self.iterations = 10
+        self.iterations = 50
 
         # If true: store all crawled html pages in the provided directory.
         self.storePages = True
@@ -93,7 +181,7 @@ class Container:
         
         
         # If True: debug
-        self.debug = True 
+        self.debug = False 
         
 def main():
 
@@ -230,9 +318,19 @@ def parse(c, page, iteration):
 
     return htmlData, newURLs
 
+def listContais(List,element):
+    for e in List:
+        if(e==element):
+            return True
+    return False
 #-------------------------------------------------------------------------  
 # Normalise newly obtained links (TODO)
 def getNormalisedURLs(newURLs):
+    normalised = []
+    for url in newURLs:
+        editedURL = url.lower()
+        if(listContais(normalised,editedURL) ==False):
+            normalised.append(editedURL)        
     return newURLs
     
 #-------------------------------------------------------------------------  
@@ -246,11 +344,12 @@ def removeDuplicates(c, newURLs):
 #-------------------------------------------------------------------------  
 # Filter out some URLs (TODO)
 def getFilteredURLs(c, newURLs):
-    toLeft = set([url for url in newURLs if url.lower().startswith(c.rootPage)])
+    toLeft = set([url for url in newURLs if url.lower().startswith(c.rootPage) and url.split('/')[-1] !=c.toFetch.split('/')[-1]])
     if c.debug:
         print("   Filtered out " + str(len(newURLs) - len(toLeft)) + " urls")  
     return toLeft
-    
+
+
 #-------------------------------------------------------------------------  
 # Store HTML pages (DONE)  
 def storePage(c, htmlData):
