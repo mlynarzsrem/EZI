@@ -38,7 +38,7 @@ public class Exercise1
 
         LinkedList <String> phonesByTika = exercise1b();
         System.out.println("Results of Tika:");
-        //printResults(phonesByTika);
+        printResults(phonesByTika);
     }
 
 
@@ -64,19 +64,20 @@ public class Exercise1
                     //System.out.println(text);
                     results.add(text);
                 }
+                document.close();
             }
             if(entry.getName().endsWith(".xml")){
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                 DocumentBuilder db = dbf.newDocumentBuilder();
                 Document document = db.parse(stream);
                 NodeList nl = document.getElementsByTagName("Phone");
-                for(int i=0;i<nl.getLength();i++){
+                for(int i=0;i<nl.getLength();i++) {
                     results.add(nl.item(i).getTextContent());
                 }
-
-
             }
+            stream.close();
         }
+        file.close();
 
 
         return results;
@@ -86,7 +87,6 @@ public class Exercise1
     {
         System.out.println("Running exercise 1b...");
         LinkedList <String> results = new LinkedList <>();
-        // TODO
         ZipFile file = new ZipFile("Exercise1.zip");
         Enumeration entries = file.entries();
         while(entries.hasMoreElements()) {
@@ -96,8 +96,13 @@ public class Exercise1
             Metadata metadata =  new Metadata();
             PhoneExtractingContentHandler peHandler = new PhoneExtractingContentHandler(new BodyContentHandler(), metadata);
             adp.parse(stream, peHandler, metadata, new ParseContext());
-
+            String [] values = metadata.getValues( "phonenumbers");
+            for (int i=0;i<values.length;i++){
+                results.add(values[i]);
+            }
+            stream.close();
         }
+        file.close();
         return new LinkedList <>(results);
     }
 
