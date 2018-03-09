@@ -62,21 +62,22 @@ public class Exercise2
         InputStream stream = new FileInputStream(file);
         Parser parser = new AutoDetectParser();
         TikaConfig tika = new TikaConfig();
-        BodyContentHandler handler = new BodyContentHandler();
+        BodyContentHandler handler = new BodyContentHandler(-1);
         Metadata metadata =  new Metadata();
         parser.parse(stream, handler, metadata, new ParseContext());
         LanguageResult detect = langDetector.detect(handler.toString());
-        String mimetype = tika.getDetector().detect(stream,metadata).toString();
+        String mimetype ="";
         DateFormat format = new SimpleDateFormat(DATE_FORMAT);
         Date crationDate =null;
         Date modificationDate=null;
         System.out.println("-----------------------");
         try {
+            mimetype = tika.getDetector().detect(stream,metadata).toString();
             crationDate=format.parse(metadata.get("meta:creation-date"));
             System.out.println(crationDate);
             modificationDate=format.parse(metadata.get("Last-Modified"));
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         saveResult(file.getName(), detect.getLanguage(), metadata.get("Author"), crationDate, modificationDate, mimetype, handler.toString()); //TODO: fill with proper values
     }
