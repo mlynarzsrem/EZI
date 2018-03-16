@@ -1,3 +1,4 @@
+
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
@@ -10,21 +11,24 @@ import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.Span;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 public class MovieReviewStatictics
 {
+    public static String TOKENIZER_MODEL = "models/en-token.bin";
+    public static String SENTENCE_MODEL = "models/en-sent.bin";
+    public static String POS_MODEL = "models/en-pos-maxent.bin";
+    public static String LEMMATIZER_DICT = "models/en-lemmatizer.dict";
+    public static String NAME_MODEL = "models/en-ner-person.bin";
+    public static String ORGANIZATION_MODEL = "models/en-ner-organization.bin";
+    public static String LOCATION_MODEL = "models/en-ner-location.bin";
+
     private static final String DOCUMENTS_PATH = "movies/";
     private int _verbCount = 0;
     private int _nounCount = 0;
@@ -34,10 +38,10 @@ public class MovieReviewStatictics
 
     private PrintStream _statisticsWriter;
 
-    private SentenceModel _sentenceModel;
-    private TokenizerModel _tokenizerModel;
-    private DictionaryLemmatizer _lemmatizer;
-    private PorterStemmer _stemmer;
+    private SentenceModel _sentenceModel; //Done
+    private TokenizerModel _tokenizerModel;//Done
+    private DictionaryLemmatizer _lemmatizer;//Done
+    private PorterStemmer _stemmer;//Done
     private POSModel _posModel;
     private TokenNameFinderModel _peopleModel;
     private TokenNameFinderModel _placesModel;
@@ -83,15 +87,43 @@ public class MovieReviewStatictics
 
     private void initModelsStemmerLemmatizer()
     {
-        //try
-        //{
-        // TODO: load all OpenNLP models (+Porter stemmer + lemmatizer)
-        // from files (use class variables)
+        try
+        {
+            //Stemmer and lematizer
+            File file = new File(LEMMATIZER_DICT);
+            InputStream targetStream = new FileInputStream(file);
+            this._lemmatizer = new DictionaryLemmatizer(targetStream);
+            this._stemmer =  new PorterStemmer();
+            //Sentece model
+            file = new File(SENTENCE_MODEL);
+            targetStream = new FileInputStream(file);
+            this._sentenceModel =  new SentenceModel(targetStream);
+            //tokenization
+            file = new File(TOKENIZER_MODEL);
+            targetStream = new FileInputStream(file);
+            this._tokenizerModel = new TokenizerModel(targetStream);
+            //Pos model
+            file = new File(POS_MODEL);
+            targetStream = new FileInputStream(file);
+            this._posModel = new POSModel(targetStream);
+            //Token name finder
+            file = new File(NAME_MODEL);
+            targetStream = new FileInputStream(file);
+            this._peopleModel =  new TokenNameFinderModel(targetStream);
+            //organization
+            file = new File(ORGANIZATION_MODEL);
+            targetStream = new FileInputStream(file);
+            this._organizationsModel=  new TokenNameFinderModel(targetStream);
+            //LOCATION
+            file = new File(LOCATION_MODEL);
+            targetStream = new FileInputStream(file);
+            this._placesModel=  new TokenNameFinderModel(targetStream);
 
-        //} catch (IOException ex)
-        //{
-        //    Logger.getLogger(MovieReviewStatictics.class.getName()).log(Level.SEVERE, null, ex);
-        //}
+
+        } catch (IOException ex)
+        {
+            Logger.getLogger(MovieReviewStatictics.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void processFile(String text)
@@ -99,7 +131,7 @@ public class MovieReviewStatictics
         // TODO: process the text to find the following statistics:
         // For each movie derive:
         //    - number of sentences
-        int noSentences = 0;
+        int noSentences =0;
         //    - number of tokens
         int noTokens = 0;
         //    - number of (unique) stemmed forms
@@ -123,30 +155,50 @@ public class MovieReviewStatictics
         // ------------------------------------------------------------------
 
         // TODO derive sentences (update noSentences variable)
-
-
+        SentenceDetectorME sentenceME =  new SentenceDetectorME(this._sentenceModel);
+        noSentences =sentenceME.sentDetect(text).length;
         // TODO derive tokens and POS tags from text
-        // (update noTokens and _totalTokensCount)
-
+        TokenizerME tokenizer = new TokenizerME(this._tokenizerModel);
+        String tokens[] = tokenizer.tokenize(text);
+        noTokens =tokens.length;
+        POSTaggerME taggerME = new POSTaggerME(this._posModel);
+        String posTags[] =taggerME.tag(tokens);
+        for(String tag : posTags){
+            if(tag.contains("RB"))
+                this._verbCount ++;
+            if(tag.contains("JJ"))
+                this._nounCount ++;
+            if(tag.contains("VB"))
+                this._adjectiveCount ++;
+            if(tag.contains("NN"))
+                this._adverbCount ++;
+        }
+        this._totalTokensCount+=posTags.length;
         // TODO perform stemming (use derived tokens)
         // (update noStemmed)
-        //Set <String> stems = new HashSet <>();
-
-        //for (String token : tokens)
-        //{
-            // use .toLowerCase().replaceAll("[^a-z0-9]", ""); thereafter, ignore "" tokens
-        //}
-
-
+        Set <String> stems = new HashSet <>();
+        List <String> derivedTokensList  = new LinkedList<String>();;
+        for (String token : tokens)
+        {
+             String editedToken =  token.toLowerCase().replaceAll("[^a-z0-9]", "");
+             if(editedToken.equals("")){
+                 derivedTokensList.add(editedToken);
+                 stems.add(this._stemmer.stem(editedToken));
+             }
+        }
+        noStemmed =stems.size();
         // TODO perform lemmatization (use derived tokens)
-        // (remove "O" from results - non-dictionary forms, update noWords)
-
-
+        String [] derivedTokens =  new String[derivedTokensList.size()];
+        derivedTokens = derivedTokensList.toArray(derivedTokens);
+        String [] lems =this._lemmatizer.lemmatize(derivedTokens,posTags);
+        noWords = lems.length;
         // TODO derive people, locations, organisations (use tokens),
-        // (update people, locations, organisations lists).
-
+        people =  new NameFinderME(this._peopleModel).find(tokens);
+        locations =  new NameFinderME(this._placesModel).find(tokens);
+        organisations =  new NameFinderME(this._organizationsModel).find(tokens);
         // TODO update overall statistics - use tags and check first letters
         // (see https://www.clips.uantwerpen.be/pages/mbsp-tags; first letter = "V" = verb?)
+
 
         // ------------------------------------------------------------------
 
@@ -155,9 +207,13 @@ public class MovieReviewStatictics
         saveResults("Stemmed forms (unique)", noStemmed);
         saveResults("Words from a dictionary (unique)", noWords);
 
-        saveNamedEntities("People", people, new String[] { });
-        saveNamedEntities("Locations", locations, new String[] { });
-        saveNamedEntities("Organizations", organisations, new String[] { });
+        try {
+            saveNamedEntities("People", people, new String[]{});
+            saveNamedEntities("Locations", locations, new String[]{});
+            saveNamedEntities("Organizations", organisations, new String[]{});
+        }
+        catch (Exception ex){
+        }
     }
 
 

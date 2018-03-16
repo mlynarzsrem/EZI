@@ -1,0 +1,126 @@
+Movie: 12 Angry Men
+Sentences: 5
+Tokens: 180
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 25
+
+Movie: 12 Years a Slave
+Sentences: 31
+Tokens: 1204
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 127
+
+Movie: 4 Months, 3 Weeks and 2 Days
+Sentences: 9
+Tokens: 212
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 33
+
+Movie: All About Eve
+Sentences: 8
+Tokens: 262
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 36
+
+Movie: American Graffiti
+Sentences: 29
+Tokens: 682
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 103
+
+Movie: Boyhood
+Sentences: 14
+Tokens: 372
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 50
+
+Movie: Casablanca
+Sentences: 11
+Tokens: 339
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 32
+
+Movie: Citizen Kane
+Sentences: 6
+Tokens: 295
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 42
+
+Movie: Gone with the Wind
+Sentences: 6
+Tokens: 237
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 27
+
+Movie: Hoop Dreams
+Sentences: 65
+Tokens: 1602
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 198
+
+Movie: Manchester by the Sea
+Sentences: 28
+Tokens: 722
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 91
+
+Movie: Moonlight
+Sentences: 12
+Tokens: 416
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 58
+
+Movie: My Left Foot
+Sentences: 9
+Tokens: 218
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 22
+
+Movie: Pan's Labyrinth
+Sentences: 25
+Tokens: 855
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 109
+
+Movie: Psycho
+Sentences: 24
+Tokens: 682
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 63
+
+Movie: Ran
+Sentences: 11
+Tokens: 412
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 60
+People: 
+
+Movie: Singin' in the Rain
+Sentences: 3
+Tokens: 144
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 16
+
+Movie: Some Like It Hot
+Sentences: 69
+Tokens: 1512
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 192
+
+Movie: The Godfather
+Sentences: 34
+Tokens: 815
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 103
+
+Movie: Three Colors Red
+Sentences: 19
+Tokens: 569
+Stemmed forms (unique): 1
+Words from a dictionary (unique): 83
+
+---------OVERALL STATISTICS----------
+Verbs: 6,50%
+Nouns: 8,50%
+Adjectives: 12,86%
+Adverbs: 26,16%
