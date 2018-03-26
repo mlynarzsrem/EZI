@@ -164,13 +164,13 @@ public class MovieReviewStatictics
         POSTaggerME taggerME = new POSTaggerME(this._posModel);
         String posTags[] =taggerME.tag(tokens);
         for(String tag : posTags){
-            if(tag.contains("RB"))
+            if(tag.startsWith("V"))
                 this._verbCount ++;
-            if(tag.contains("JJ"))
+            if(tag.startsWith("N"))
                 this._nounCount ++;
-            if(tag.contains("VB"))
+            if(tag.startsWith("JJ"))
                 this._adjectiveCount ++;
-            if(tag.contains("NN"))
+            if(tag.startsWith("RB"))
                 this._adverbCount ++;
         }
         this._totalTokensCount+=posTags.length;
@@ -208,9 +208,9 @@ public class MovieReviewStatictics
         saveResults("Words from a dictionary (unique)", noWords);
 
         try {
-            saveNamedEntities("People", people, new String[]{});
-            saveNamedEntities("Locations", locations, new String[]{});
-            saveNamedEntities("Organizations", organisations, new String[]{});
+            saveNamedEntities("People", people, tokens);
+            saveNamedEntities("Locations", locations, tokens);
+            saveNamedEntities("Organizations", organisations, tokens);
         }
         catch (Exception ex){
         }
