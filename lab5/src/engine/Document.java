@@ -51,43 +51,60 @@ public class Document
         _terms.addAll(fTokens);
         Collections.sort(_terms);
     }
-
+    private double getMax(double tab[]){
+        double maxVal = tab[0];
+        for(int i=1;i<tab.length;i++){
+            if(tab[i]>maxVal)
+                maxVal = tab[i];
+        }
+        return maxVal;
+    }
     public void computeVectorRepresentations(Dictionary dictionary, TokenizerME tokenizer, PorterStemmer stemmer)
     {
         String tokenizedAndNormalized[] = getTokenizedAndNormalized(tokenizer, stemmer);
 
-        // TODO compute bow representation
         // 1) iterate over tokenizedAndNormalized
         // 2) check if a dictionary._terms contains a given term
         // 3) update bag-of-words vector. Use dictionary.termID to get term's position
         _bow_representation = new double[dictionary._terms.size()];
+        for(int i=0;i<_bow_representation.length;i++){
+            _bow_representation[i]=0.0d;
+        }
         for(String tAN : tokenizedAndNormalized){
             if(dictionary._terms.contains(tAN)){
-                /dictionary._termID.
+                int pos = dictionary._termID.get(tAN);
+                _bow_representation[pos]+=1.0d;
             }
         }
-        // TODO compute TF representation
+        double maxVal =getMax(_bow_representation);
         // use max value of bag of words to normalize
         _tf_representation = new double[dictionary._terms.size()];
-        // -----------------------------------------------
+        for(int i=0;i<_tf_representation.length;i++){
+            _tf_representation[i] =_bow_representation[i]/maxVal;
+        }
 
-        // -----------------------------------------------
-
-
-        // TODO compute tf-idf representation
         // use _tf_representation vector and dictionary._idf()
         _tf_idf_representation = new double[dictionary._terms.size()];
-        // -----------------------------------------------
+        for(int i=0;i<_tf_idf_representation.length;i++){
+            double idf =  dictionary._idf.get(i);
+            _tf_idf_representation[i] =idf*_tf_representation[i];
 
-        // -----------------------------------------------
+        }
 
-        /*for (int i = 0; i < _tf_idf_representation.length; i++)
+        /*
+        for (int i = 0; i < _tf_idf_representation.length; i++)
             System.out.print(_bow_representation[i] + " " );
         System.out.println("");
+        */
+        /*
         for (int i = 0; i < _tf_idf_representation.length; i++)
             System.out.print(_tf_representation[i] + " " );
         System.out.println("");
+*/
+/*
         for (int i = 0; i < _tf_idf_representation.length; i++)
-            System.out.print(_tf_idf_representation[i] + " " );*/
+            System.out.print(_tf_idf_representation[i] + " " );
+        */
+
     }
 }

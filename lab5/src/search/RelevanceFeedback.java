@@ -16,6 +16,14 @@ public class RelevanceFeedback implements ISearch
     private int _relevantDocIDs[];
     private int _irrelevantDocIDs[];
 
+    public double getSum(double tab[]){
+        double sumVal=0.0d;
+        for(double d : tab){
+            if(Double.isNaN(d)==false)
+                sumVal+=d;
+        }
+        return sumVal;
+    }
     public RelevanceFeedback(ArrayList <Document> documents,
                              double alpha,
                              double beta,
@@ -45,38 +53,40 @@ public class RelevanceFeedback implements ISearch
             System.out.print(String.format("%.2f ", aQueryVector));
         System.out.println("");
 
-        // TODO implement Rocchio method for relevance feedback
         // use _tf_idf_representation of documents,
         // alpha, betta, and gamma are the weights,
         // relevantDocIDs is the vector of IDs of relevant documents (id = index),
         // irrelevantDocIDs is the vector of IDs of irrelevant documents (id = index)
         //-----------------------------------------------------------
         double modifiedQuery[] = new double[queryVector.length];
-        // -----------------------------------------------
-        // use _alpha
+        for(int i=0;i<modifiedQuery.length;i++){
+            modifiedQuery[i] = _alpha*queryVector[i];
+        }
 
-        // -----------------------------------------------
-
-        // TODO 2) update the modified query (relevant documents).
         // 1) iterate over the indexes of the relevant documents
         // 2) derive the vector representation (tf-idf) of a document
         // 3) update the modifiedQuery vector (add, beta weight, divide
         // by the number of relevant documents)
 
         // -----------------------------------------------
-        //for (int relevantDocID : _relevantDocIDs)
+
+        for (int relevantDocID : _relevantDocIDs){
+            double sumVal = getSum(_documents.get(relevantDocID)._tf_idf_representation);
+            modifiedQuery[relevantDocID] += _beta*(sumVal/_relevantDocIDs.length);
+        }
 
         // -----------------------------------------------
 
-
-        // TODO 3)  update the modified query
         // 1) iterate over the indexes of the irrelevant documents
         // 2) derive the vector representation (tf-idf) of a document
         // 3) update the modifiedQuery vector (substract, gamma weight, divide
         // by the number of irrelevant documents)
 
         // -----------------------------------------------
-        //for (int irrelevantDocID : _irrrelevantDocIDs)
+        for (int irrelevantDocID : _irrelevantDocIDs){
+            double sumVal = getSum(_documents.get(irrelevantDocID)._tf_idf_representation);
+            modifiedQuery[irrelevantDocID] -= _beta*(sumVal/_irrelevantDocIDs.length);
+        }
 
         // ---------------------------------------------------------
 

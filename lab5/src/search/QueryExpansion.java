@@ -34,31 +34,27 @@ public class QueryExpansion implements ISearch
         this._stemmer = stemmer;
 
         RealMatrix A = MatrixUtils.createRealMatrix(dictionary._terms.size(), documents.size());
-
-        // TODO compute _correlationMatrix
-        // TODO 1) construct matrix A
         // Notice that a bag-of-words representation of a document
         // is a column of A;
         // derive subsequent bow representations
         // and use setColumnVector() method of A to set the columns.
-
-        // -----------------------------------------------------
-
-        // -----------------------------------------------------
-
-        // TODO 2) normalize matrix A
+        for(int i=0;i<documents.size();i++){
+            A.setColumnVector(i,new ArrayRealVector(documents.get(i)._bow_representation));
+        }
         // Iterate over rows. Use row.getNorm() method which returns a length of a vector.
         // Divide each element of a vector by the length ( newRow = oldRow.mapDivide( length ).
         // update A (setRowVector)
 
-        // -----------------------------------------------------
-
-        // -----------------------------------------------------
-
-        // TODO 3) obtain AT (transposed matrix)
-
-        // TODO 4) set _correlationMatrix = A x AT (multiply)
-        _correlationMatrix = null;
+        for(int row=0;row<A.getRowDimension();row++){
+            double norm = A.getRowVector(row).getNorm();
+            double matrixRow []= A.getRow(row);
+            for(int i=0;i<matrixRow.length;i++){
+                matrixRow[i]/=norm;
+            }
+            A.setRow(row,matrixRow);
+        }
+        RealMatrix AT =A.transpose();
+        _correlationMatrix = A.multiply(AT);
     }
 
     @Override
@@ -67,14 +63,16 @@ public class QueryExpansion implements ISearch
         // -----------------------------------------------------
         double data[][] = _correlationMatrix.getData();
 
-        // TODO 1) Build a set of unique indexes of terms of a query
         // You can iterate over dictionary._terms and use bow representation
         // of a query to verify if a term occurs in the query or not
         // if occurs, add the index of the term to uniqueTerms_Query
         Set <Integer> uniqueTerms_Query = new HashSet <>(_dictionary._terms.size());
-        // --------------------------------------------------------
-
-        //-------------------------------------------------------
+        for(String term: _dictionary._terms){
+            int id =_dictionary._termID.get(term);
+            if(query._bow_representation[id]>0.0) {
+                uniqueTerms_Query.add(id);
+            }
+        }
 
         System.out.print("Original terms: ");
         for (Integer i : uniqueTerms_Query)
@@ -96,10 +94,17 @@ public class QueryExpansion implements ISearch
             //      - choose the term with the greatest correlation with the original term
             double maxCorrelation = -1.0d;
             int index = -1;
+            for(String term: _dictionary._terms){
+               Integer term_id = _dictionary._termID.get(term);
+               if(uniqueTerms_Query.contains(term_id)==false){
+                   double currentCorr = _correlationMatrix.getEntry(i,term_id);
+                   if(currentCorr>maxCorrelation && currentCorr > CORRELATION_THRESHOLD){
+                       maxCorrelation = currentCorr;
+                       index =term_id;
+                   }
+               }
 
-            //-------------------------------------------------------
-
-            //-------------------------------------------------------
+            }
 
             // 3) add the index of the chosen term to uniqueTerms_ModifiedQuery (DONE)
             if (index > -1)
@@ -119,7 +124,18 @@ public class QueryExpansion implements ISearch
         // Build a string content which consists of keywords which match terms
         // (indexes) of uniqueTerms_Query and uniqueTerms_ModifiedQuery.
         // The order of keywords does not matter.
-        //-------------------------------------------------------
+        for (Integer i : uniqueTerms_Query){
+            String term = _dictionary._terms.get(i);
+            String keyword = _dictionary._termsToKeywords.get(term);
+            content.append(term);
+            content.append(" ");
+        }
+        for (Integer i : uniqueTerms_ModifiedQuery){
+            String term = _dictionary._terms.get(i);
+            String keyword = _dictionary._termsToKeywords.get(term);
+            content.append(term);
+            content.append(" ");
+        }
 
         //-------------------------------------------------------
 
