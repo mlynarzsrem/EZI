@@ -40,7 +40,6 @@ public class WordNet implements ISearch
     @Override
     public ArrayList <Score> getSortedDocuments(Document query)
     {
-        // TODO 1) Build a set of unique indexes of terms of a query
         // You can iterate over dictionary._terms and use bow representation
         // of a query to verify if a term occurs in the query or not
         // if occurs, add the index of the term to uniqueTerms_Query
@@ -79,33 +78,15 @@ public class WordNet implements ISearch
             {
                 // 2) Iterate over groups of senses (getSenses()) - Synsets;
                 // Print each synset .toString(). This info contains a meaning of a group and some examples.
-                List<Synset> synList = baseForm.getSenses();
-               /* for(Synset s : baseForm.getSenses()){
-                    System.out.print(s.toString()+ " ");
-                }*/
-               for(int j=0;j<synList.size();j++){
-                   try {
-                       System.out.println(synList.get(j).toString());
-                       for(Word word : synList.get(j).getWords()){
-                           System.out.print(word.getLemma());
-                       }
-                   }
-                   catch (Exception e){
-                       e.printStackTrace();
-
+               for (Synset synset : baseForm.getSenses()){
+                   System.out.println(synset.toString());
+                   for(Word word : synset.getWords()){
+                       System.out.print(word.getLemma());
                    }
                }
                 System.out.println();
 
                 // 3) Iterate over words of a synset (getWords()). Print a lemma of a word.
-                for(int j=0;j<synList.size();j++){
-                    try {
-                        System.out.print(synList.get(j).toString());
-                    }
-                    catch (Exception e){
-
-                    }
-                }
             }
 
             } catch (JWNLException e)
