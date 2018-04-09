@@ -85,7 +85,7 @@ public class RelevanceFeedback implements ISearch
         // -----------------------------------------------
         for (int irrelevantDocID : _irrelevantDocIDs){
             double sumVal = getSum(_documents.get(irrelevantDocID)._tf_idf_representation);
-            modifiedQuery[irrelevantDocID] -= _beta*(sumVal/_irrelevantDocIDs.length);
+            modifiedQuery[irrelevantDocID] -= _gamma*(sumVal/_irrelevantDocIDs.length);
         }
 
         // ---------------------------------------------------------

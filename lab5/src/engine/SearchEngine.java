@@ -20,7 +20,7 @@ public class SearchEngine
     private Dictionary _dictionary;
 
     private String QUERY = "machine learning";
-    private int K_BEST_RESULTS = 10;
+    private int K_BEST_RESULTS = 20;
 
     public static void main(String args[]) throws IOException
     {
@@ -66,8 +66,8 @@ public class SearchEngine
         //ISearch SEARCH_METHOD = new DummySimilarity(_documents);
         //ISearch SEARCH_METHOD = new CosineSimilarity_TF_IDF(_documents);
         //ISearch SEARCH_METHOD = new RelevanceFeedback(_documents, 0.5d, 0.7d, 0.3d, new int[] { 66, 29 }, new int[] { 7, 77 });
-        //ISearch SEARCH_METHOD = new QueryExpansion(_dictionary, _documents, _tokenizer, _stemmer);
-        ISearch SEARCH_METHOD = new WordNet(_dictionary, _documents);
+        ISearch SEARCH_METHOD = new QueryExpansion(_dictionary, _documents, _tokenizer, _stemmer);
+        //ISearch SEARCH_METHOD = new WordNet(_dictionary, _documents);
 
         System.out.println("Searching using: " + SEARCH_METHOD.getName());
 

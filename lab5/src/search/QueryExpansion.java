@@ -127,13 +127,13 @@ public class QueryExpansion implements ISearch
         for (Integer i : uniqueTerms_Query){
             String term = _dictionary._terms.get(i);
             String keyword = _dictionary._termsToKeywords.get(term);
-            content.append(term);
+            content.append(keyword);
             content.append(" ");
         }
         for (Integer i : uniqueTerms_ModifiedQuery){
             String term = _dictionary._terms.get(i);
             String keyword = _dictionary._termsToKeywords.get(term);
-            content.append(term);
+            content.append(keyword);
             content.append(" ");
         }
 
